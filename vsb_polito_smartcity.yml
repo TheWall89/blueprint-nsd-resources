@@ -1,0 +1,95 @@
+# vsb_polito_smartcity_nomgmt.yaml
+---
+blueprintId: 'vsb_polito_smartcity'
+version: '1.0'
+name: PoliTo Smart City
+description: Blueprint for 5G EVE Smart City (Smart Turin) for quantification of people in sensitive areas.
+parameters:
+atomicComponents:
+  - componentId: mobility_tracker
+    serversNumber: 1
+    endPointsIds:
+      - cp_tracker_ext_mobile
+      - cp_tracker_data
+      - cp_tracker_mgmt
+  - componentId: visualization_tool
+    serversNumber: 1
+    endPointsIds:
+      - cp_vis_data
+      - cp_vis_mgmt
+      - cp_vis_user
+endPoints:
+  - endPointId: cp_tracker_ext_mobile
+    external: true
+    management: false
+    ranConnection: true
+  - endPointId: cp_tracker_data
+    external: false
+    management: false
+    ranConnection: false
+  - endPointId: cp_tracker_mgmt
+    external: true
+    management: true
+    ranConnection: false
+  - endPointId: cp_vis_data
+    external: false
+    management: false
+    ranConnection: false
+  - endPointId: cp_vis_mgmt
+    external: true
+    management: true
+    ranConnection: false
+  - endPointId: cp_vis_user
+    external: true
+    management: false
+    ranConnection: false
+  - endPointId: sap_tracker_m2m
+    external: true
+    management: false
+    ranConnection: true
+  - endPointId: sap_vis_user
+    external: true
+    management: false
+    ranConnection: false
+connectivityServices:
+  - name: vl_smartcity_ext
+    management: false
+    endPointIds:
+      - sap_tracker_m2m
+      - cp_tracker_ext_mobile
+    external: true
+  - name: vl_smartcity_data
+    management: false
+    endPointIds:
+      - cp_vis_data
+      - cp_tracker_data
+    external: false
+  - name: vl_smartcity_user
+    management: false
+    endPointIds:
+      - cp_vis_user
+      - sap_vis_user
+    external: true
+compatibleContextBlueprint:
+  - 'ctx_smartcity_traffic'
+applicationMetrics:
+  - metricId: tracked_devices
+    name: Number of total tracked devices (distinct mac addresses)
+    metricCollectionType: CUMULATIVE
+    unit: devices
+    interval: 5s
+    topic: /app/tracked_devices
+  - metricId: processed_records
+    name: Number of total processed records
+    metricCollectionType: CUMULATIVE
+    unit: records
+    interval: 5s
+    topic: /app/processed_records
+  - metricId: record_visualization_time
+    name: Time needed to process and visualize a record
+    metricCollectionType: GAUGE
+    unit: ms
+    interval: 1s
+    topic: /app/tracking_response_time
+compatibleSites:
+  - ITALY_TURIN

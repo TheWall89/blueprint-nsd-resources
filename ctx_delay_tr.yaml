@@ -1,0 +1,10 @@
+# ctx_delay_nsds.yaml
+---
+- nsdId: Netem_Delay_Generator
+  nsdVersion: '1.0'
+  nsFlavourId: ns_Netem_Delay_Generator_df
+  nsInstantiationLevelId: ns_Netem_Delay_Generator_il
+  input:
+    - parameterId: incoming_traffic_load
+      minValue: '1'
+      maxValue: '1000'

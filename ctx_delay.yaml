@@ -1,0 +1,74 @@
+---
+blueprintId: ctx_delay
+version: '1.0'
+name: Delay Generator
+description: NETEM Traffic Delay Generator Service
+parameters:
+- parameterId: incoming_traffic_load
+  parameterName: Incoming Traffic Load
+  parameterType: number
+  parameterDescription: Maximum bw of the incoming traffic in Mbps
+  applicabilityField: Traffic shaping
+configurableParameters:
+- delay_avg
+- delay_var
+- consecutive_delay_dependency_percentage
+atomicComponents:
+- componentId: delay_generator
+  serversNumber: 1
+  endPointsIds:
+  - cp_dg_traffic_in
+  - cp_dg_traffic_out
+  - cp_dg_mgmt
+endPoints:
+- endPointId: cp_dg_traffic_in
+  external: true
+  management: false
+  ranConnection: true
+- endPointId: cp_dg_traffic_out
+  external: true
+  management: false
+  ranConnection: false
+- endPointId: cp_dg_mgmt
+  external: true
+  management: true
+  ranConnection: false
+- endPointId: sap_dg_in
+  external: true
+  management: false
+  ranConnection: true
+- endPointId: sap_dg_out
+  external: true
+  management: false
+  ranConnection: false
+- endPointId: sap_dg_mgmt
+  external: true
+  management: true
+  ranConnection: false
+compatibleSites:
+- ITALY_TURIN
+connectivityServices:
+- endPointIds:
+  - sap_dg_mgmt
+  - cp_dg_mgmt
+  external: true
+  management: true
+  name: vl_dg_mgmt
+- endPointIds:
+  - sap_dg_out
+  - cp_dg_traffic_out
+  external: true
+  name: vl_dg_out
+- endPointIds:
+  - sap_dg_in
+  - cp_dg_traffic_in
+  external: true
+  name: vl_dg_in
+applicationMetrics:
+- metricId: delay_iface
+  name: Traffic delay measured between In and Out interfaces
+  metricCollectionType: GAUGE
+  metricGraphType: LINE
+  unit: ms
+  interval: 1s
+compositionStrategy: PASS_THROUGH

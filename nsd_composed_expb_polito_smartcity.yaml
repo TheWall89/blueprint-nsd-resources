@@ -1,0 +1,250 @@
+---
+nsdIdentifier: "0176eb11-f613-4b40-bd71-c7a4ea4f0896"
+designer: "NSD generator + NSD Composer"
+version: "1.0"
+nsdName: "PoliTo Smart City NSD + NETEM Traffic Delay Generator Service + Context\
+  \ Blueprint - Traffic generator for smartcity use-case. NSD"
+nsdInvariantId: "71544f81-653a-4dc1-a49c-a34bc1e17976"
+vnfdId:
+  - "mobility_tracker"
+  - "visualization_tool"
+  - "396d1b6b-331b-4dd7-b48e-376517d3654a"
+  - "traffic_generator"
+sapd:
+  - cpdId: "sap_tracker_m2m"
+    layerProtocol: "IPV4"
+    cpRole: "ROOT"
+    addressData:
+      - addressType: "IP_ADDRESS"
+        iPAddressAssignment: false
+        floatingIpActivated: true
+        management: false
+        iPAddressType: "IPv4"
+        numberOfIpAddress: 1
+    sapAddressAssignment: false
+    nsVirtualLinkDescId: "vl_smartcity_ext"
+  - cpdId: "sap_vis_user"
+    layerProtocol: "IPV4"
+    cpRole: "ROOT"
+    addressData:
+      - addressType: "IP_ADDRESS"
+        iPAddressAssignment: false
+        floatingIpActivated: true
+        management: false
+        iPAddressType: "IPv4"
+        numberOfIpAddress: 1
+    sapAddressAssignment: false
+    nsVirtualLinkDescId: "vl_smartcity_user"
+  - cpdId: "sap_vsb_polito_smartcity_mgmt"
+    layerProtocol: "IPV4"
+    cpRole: "ROOT"
+    addressData:
+      - addressType: "IP_ADDRESS"
+        iPAddressAssignment: false
+        floatingIpActivated: true
+        management: false
+        iPAddressType: "IPv4"
+        numberOfIpAddress: 1
+    sapAddressAssignment: false
+    nsVirtualLinkDescId: "vl_vsb_polito_smartcity_mgmt"
+virtualLinkDesc:
+  - virtualLinkDescId: "vl_smartcity_ext"
+    virtualLinkDescProvider: "NSD generator"
+    virtuaLinkDescVersion: "1.0"
+    connectivityType:
+      layerProtocol: "IPV4"
+      flowPattern: ""
+    virtualLinkDf:
+      - flavourId: "vl_smartcity_ext_df"
+        serviceAvaibilityLevel: "LEVEL_1"
+  - virtualLinkDescId: "vl_smartcity_data"
+    virtualLinkDescProvider: "NSD generator"
+    virtuaLinkDescVersion: "1.0"
+    connectivityType:
+      layerProtocol: "IPV4"
+      flowPattern: ""
+    virtualLinkDf:
+      - flavourId: "vl_smartcity_data_df"
+        serviceAvaibilityLevel: "LEVEL_1"
+  - virtualLinkDescId: "vl_smartcity_user"
+    virtualLinkDescProvider: "NSD generator"
+    virtuaLinkDescVersion: "1.0"
+    connectivityType:
+      layerProtocol: "IPV4"
+      flowPattern: ""
+    virtualLinkDf:
+      - flavourId: "vl_smartcity_user_df"
+        serviceAvaibilityLevel: "LEVEL_1"
+  - virtualLinkDescId: "vl_vsb_polito_smartcity_mgmt"
+    virtualLinkDescProvider: "NSD generator"
+    virtuaLinkDescVersion: "1.0"
+    connectivityType:
+      layerProtocol: "IPV4"
+      flowPattern: ""
+    virtualLinkDf:
+      - flavourId: "vl_vsb_polito_smartcity_mgmt_df"
+        serviceAvaibilityLevel: "LEVEL_1"
+  - virtualLinkDescId: "vl_dg_out"
+    virtualLinkDescProvider: "NXW"
+    virtuaLinkDescVersion: "1.0"
+    connectivityType:
+      layerProtocol: "IPV4"
+      flowPattern: null
+    virtualLinkDf:
+      - flavourId: "df_vl_dg_out"
+        qos:
+          latency: 0
+          packetDelayVariation: 0
+          packetLossRatio: 0
+          priority: 0
+        serviceAvaibilityLevel: "LEVEL_1"
+    description: "Network to send outgoing delayed traffic."
+nsDf:
+  - nsDfId: "vsb_polito_smartcity_df"
+    flavourKey: "vsb_polito_smartcity_df_fk"
+    vnfProfile:
+      - vnfProfileId: "mobility_tracker_vnfp"
+        vnfdId: "mobility_tracker"
+        flavourId: "mobility_tracker_vnf_df"
+        instantiationLevel: "mobility_tracker_vnf_il"
+        minNumberOfInstances: 1
+        maxNumberOfInstances: 1
+        nsVirtualLinkConnectivity:
+          - virtualLinkProfileId: "vlp_vl_dg_out"
+            cpdId:
+              - "cp_tracker_ext_mobile"
+          - virtualLinkProfileId: "vl_smartcity_data_vlp"
+            cpdId:
+              - "cp_tracker_data"
+          - virtualLinkProfileId: "vl_vsb_polito_smartcity_mgmt_vlp"
+            cpdId:
+              - "cp_tracker_mgmt"
+      - vnfProfileId: "visualization_tool_vnfp"
+        vnfdId: "visualization_tool"
+        flavourId: "visualization_tool_vnf_df"
+        instantiationLevel: "visualization_tool_vnf_il"
+        minNumberOfInstances: 1
+        maxNumberOfInstances: 1
+        nsVirtualLinkConnectivity:
+          - virtualLinkProfileId: "vl_smartcity_data_vlp"
+            cpdId:
+              - "cp_vis_data"
+          - virtualLinkProfileId: "vl_vsb_polito_smartcity_mgmt_vlp"
+            cpdId:
+              - "cp_vis_mgmt"
+          - virtualLinkProfileId: "vl_smartcity_user_vlp"
+            cpdId:
+              - "cp_vis_user"
+      - vnfProfileId: "vnfp_netem"
+        vnfdId: "396d1b6b-331b-4dd7-b48e-376517d3654a"
+        flavourId: "vnf_df_netem"
+        instantiationLevel: "vnf_il_netem"
+        minNumberOfInstances: 1
+        maxNumberOfInstances: 1
+        nsVirtualLinkConnectivity:
+          - virtualLinkProfileId: "vlp_vl_dg_out"
+            cpdId:
+              - "cp_dg_traffic_out"
+          - virtualLinkProfileId: "vl_vsb_polito_smartcity_mgmt_vlp"
+            cpdId:
+              - "cp_dg_mgmt"
+          - virtualLinkProfileId: "vl_smartcity_ext_vlp"
+            cpdId:
+              - "cp_dg_traffic_in"
+      - vnfProfileId: "traffic_generator_vnfp"
+        vnfdId: "traffic_generator"
+        flavourId: "traffic_generator_vnf_df"
+        instantiationLevel: "traffic_generator_vnf_il"
+        minNumberOfInstances: 1
+        maxNumberOfInstances: 1
+        nsVirtualLinkConnectivity:
+          - virtualLinkProfileId: "vl_smartcity_ext_vlp"
+            cpdId:
+              - "cp_gen_data"
+          - virtualLinkProfileId: "vl_vsb_polito_smartcity_mgmt_vlp"
+            cpdId:
+              - "cp_gen_mgmt"
+    virtualLinkProfile:
+      - virtualLinkProfileId: "vl_smartcity_ext_vlp"
+        virtualLinkDescId: "vl_smartcity_ext"
+        flavourId: "vl_smartcity_ext_df"
+        maxBitrateRequirements:
+          root: "1"
+          leaf: "1"
+        minBitrateRequirements:
+          root: "1"
+          leaf: "1"
+      - virtualLinkProfileId: "vl_smartcity_data_vlp"
+        virtualLinkDescId: "vl_smartcity_data"
+        flavourId: "vl_smartcity_data_df"
+        maxBitrateRequirements:
+          root: "1"
+          leaf: "1"
+        minBitrateRequirements:
+          root: "1"
+          leaf: "1"
+      - virtualLinkProfileId: "vl_smartcity_user_vlp"
+        virtualLinkDescId: "vl_smartcity_user"
+        flavourId: "vl_smartcity_user_df"
+        maxBitrateRequirements:
+          root: "1"
+          leaf: "1"
+        minBitrateRequirements:
+          root: "1"
+          leaf: "1"
+      - virtualLinkProfileId: "vl_vsb_polito_smartcity_mgmt_vlp"
+        virtualLinkDescId: "vl_vsb_polito_smartcity_mgmt"
+        flavourId: "vl_vsb_polito_smartcity_mgmt_df"
+        maxBitrateRequirements:
+          root: "1"
+          leaf: "1"
+        minBitrateRequirements:
+          root: "1"
+          leaf: "1"
+      - virtualLinkProfileId: "vlp_vl_dg_out"
+        virtualLinkDescId: "vl_dg_out"
+        flavourId: "df_vl_dg_out"
+        maxBitrateRequirements:
+          root: "1"
+          leaf: "1"
+        minBitrateRequirements:
+          root: "1"
+          leaf: "1"
+    nsInstantiationLevel:
+      - nsLevelId: "vsb_polito_smartcity_il_default"
+        description: "Default Instantiation Level"
+        vnfToLevelMapping:
+          - vnfProfileId: "mobility_tracker_vnfp"
+            numberOfInstances: 1
+          - vnfProfileId: "visualization_tool_vnfp"
+            numberOfInstances: 1
+          - vnfProfileId: "vnfp_netem"
+            numberOfInstances: 1
+          - vnfProfileId: "traffic_generator_vnfp"
+            numberOfInstances: 1
+        virtualLinkToLevelMapping:
+          - virtualLinkProfileId: "vl_smartcity_ext_vlp"
+            bitRateRequirements:
+              root: "1"
+              leaf: "1"
+          - virtualLinkProfileId: "vl_smartcity_data_vlp"
+            bitRateRequirements:
+              root: "1"
+              leaf: "1"
+          - virtualLinkProfileId: "vl_smartcity_user_vlp"
+            bitRateRequirements:
+              root: "1"
+              leaf: "1"
+          - virtualLinkProfileId: "vl_vsb_polito_smartcity_mgmt_vlp"
+            bitRateRequirements:
+              root: "1"
+              leaf: "1"
+          - virtualLinkProfileId: "vlp_vl_dg_out"
+            bitRateRequirements:
+              root: "1"
+              leaf: "1"
+    defaultNsInstantiationLevelId: "vsb_polito_smartcity_il_default"
+security:
+  signature: "FC_NSD_SIGNATURE"
+  algorithm: "FC_NSD_ALGORITHM"
+  certificate: "FC_NSD_CERTIFICATE"

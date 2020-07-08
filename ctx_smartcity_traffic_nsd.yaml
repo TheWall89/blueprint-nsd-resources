@@ -1,0 +1,97 @@
+# ctx_smartcity_traffic_nsd.yaml
+---
+nsdIdentifier: "ctx_smartcity_traffic_nsd"
+designer: "NSD generator"
+version: "1.0"
+nsdName: "Context Blueprint - Traffic generator for smartcity use-case. NSD"
+nsdInvariantId: "ctx_smartcity_traffic_nsd"
+vnfdId:
+  - "traffic_generator"
+sapd:
+  - cpdId: "sap_gen_mgmt"
+    layerProtocol: "IPV4"
+    cpRole: "ROOT"
+    addressData:
+      - addressType: "IP_ADDRESS"
+        iPAddressAssignment: false
+        floatingIpActivated: true
+        management: false
+        iPAddressType: "IPv4"
+        numberOfIpAddress: 1
+    sapAddressAssignment: false
+    nsVirtualLinkDescId: "vl_sc_traffic_mgmt"
+virtualLinkDesc:
+  - virtualLinkDescId: "vl_sc_traffic_data"
+    virtualLinkDescProvider: "NSD generator"
+    virtuaLinkDescVersion: "1.0"
+    connectivityType:
+      layerProtocol: "IPV4"
+      flowPattern: ""
+    virtualLinkDf:
+      - flavourId: "vl_sc_traffic_data_df"
+        serviceAvaibilityLevel: "LEVEL_1"
+  - virtualLinkDescId: "vl_sc_traffic_mgmt"
+    virtualLinkDescProvider: "NSD generator"
+    virtuaLinkDescVersion: "1.0"
+    connectivityType:
+      layerProtocol: "IPV4"
+      flowPattern: ""
+    virtualLinkDf:
+      - flavourId: "vl_sc_traffic_mgmt_df"
+        serviceAvaibilityLevel: "LEVEL_1"
+nsDf:
+  - nsDfId: "ctx_smartcity_traffic_df"
+    flavourKey: "ctx_smartcity_traffic_df_fk"
+    vnfProfile:
+      - vnfProfileId: "traffic_generator_vnfp"
+        vnfdId: "traffic_generator"
+        flavourId: "traffic_generator_vnf_df"
+        instantiationLevel: "traffic_generator_vnf_il"
+        minNumberOfInstances: 1
+        maxNumberOfInstances: 1
+        nsVirtualLinkConnectivity:
+          - virtualLinkProfileId: "vl_sc_traffic_data_vlp"
+            cpdId:
+              - "cp_gen_data"
+          - virtualLinkProfileId: "vl_sc_traffic_mgmt_vlp"
+            cpdId:
+              - "cp_gen_mgmt"
+    virtualLinkProfile:
+      - virtualLinkProfileId: "vl_sc_traffic_data_vlp"
+        virtualLinkDescId: "vl_sc_traffic_data"
+        flavourId: "vl_sc_traffic_data_df"
+        maxBitrateRequirements:
+          root: "1"
+          leaf: "1"
+        minBitrateRequirements:
+          root: "1"
+          leaf: "1"
+      - virtualLinkProfileId: "vl_sc_traffic_mgmt_vlp"
+        virtualLinkDescId: "vl_sc_traffic_mgmt"
+        flavourId: "vl_sc_traffic_mgmt_df"
+        maxBitrateRequirements:
+          root: "1"
+          leaf: "1"
+        minBitrateRequirements:
+          root: "1"
+          leaf: "1"
+    nsInstantiationLevel:
+      - nsLevelId: "ctx_smartcity_traffic_il_default"
+        description: "Default Instantiation Level"
+        vnfToLevelMapping:
+          - vnfProfileId: "traffic_generator_vnfp"
+            numberOfInstances: 1
+        virtualLinkToLevelMapping:
+          - virtualLinkProfileId: "vl_sc_traffic_data_vlp"
+            bitRateRequirements:
+              root: "1"
+              leaf: "1"
+          - virtualLinkProfileId: "vl_sc_traffic_mgmt_vlp"
+            bitRateRequirements:
+              root: "1"
+              leaf: "1"
+    defaultNsInstantiationLevelId: "ctx_smartcity_traffic_il_default"
+security:
+  signature: "FC_NSD_SIGNATURE"
+  algorithm: "FC_NSD_ALGORITHM"
+  certificate: "FC_NSD_CERTIFICATE"

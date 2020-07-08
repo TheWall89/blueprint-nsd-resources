@@ -1,0 +1,47 @@
+# ctx_smartcity_traffic.yaml
+---
+blueprintId: 'ctx_smartcity_traffic'
+version: '1.0'
+name: 'Context Blueprint - Traffic generator for smartcity use-case.'
+description: 'Context Blueprint to emulate traffic from Libellium devices.'
+parameters:
+  - parameterId: 'records_rate'
+    parameterName: 'Emulated records rate.'
+    parameterType: 'number'
+    parameterDescription: 'The number of emulated records to be produced per each second.'
+    applicabilityField: Traffic shaping
+configurableParameters:
+  - 'records_rate'
+atomicComponents:
+  - componentId: traffic_generator
+    serversNumber: 1
+    endPointsIds:
+      - cp_gen_data
+      - cp_gen_mgmt
+endPoints:
+  - endPointId: cp_gen_data
+    external: false
+    management: false
+    ranConnection: false
+  - endPointId: cp_gen_mgmt
+    external: false
+    management: true
+    ranConnection: false
+  - endPointId: sap_gen_mgmt
+    external: true
+    management: true
+    ranConnection: false
+connectivityServices:
+  - name: vl_sc_traffic_data
+    management: false
+    endPointIds:
+      - cp_gen_data
+  - name: vl_sc_traffic_mgmt
+    management: true
+    endPointIds:
+      - cp_gen_mgmt
+      - sap_gen_mgmt
+compatibleSites:
+  - ITALY_TURIN
+compositionStrategy: CONNECT
+applicationMetrics:
