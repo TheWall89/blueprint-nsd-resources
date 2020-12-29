@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import sys
 import time
 from os import scandir
 
 import yaml
+import json
 from requests import HTTPError, get, patch, post, put
 
 
@@ -32,16 +34,50 @@ def main():
                 "nsds": [post("http://localhost:8086/nsd/generate", json=vsb).json()],
             }
         ]
-        tracker_copy = vsb["atomicComponents"][0].copy()
+        tracker = next(
+            ac
+            for ac in vsb["atomicComponents"]
+            if ac["componentId"] == "mobility_tracker"
+        )
+        data = next(
+            vl
+            for vl in vsb["connectivityServices"]
+            if vl["name"] == "vl_smart_city_data"
+        )
+        mgmt = next(
+            vl
+            for vl in vsb["connectivityServices"]
+            if vl["name"] == "vl_smart_city_mgmt"
+        )
         for i in range(1, servers + 1):
+            tracker_copy = tracker.copy()
             tracker_copy["componentId"] = f"tracker_copy_{i}"
-            tracker_copy["endPointIds"] = [
+            tracker_copy["endPointsIds"] = [
                 f"cp_tracker_copy_{i}_data",
                 f"cp_tracker_copy_{i}_mgmt",
             ]
             vsb["atomicComponents"].append(tracker_copy)
             vsb["endPoints"].append(
+                {
+                    "endPointId": tracker_copy["endPointsIds"][0],
+                    "external": False,
+                    "management": False,
+                    "ranConnection": False,
+                }
             )
+            vsb["endPoints"].append(
+                {
+                    "endPointId": tracker_copy["endPointsIds"][1],
+                    "external": True,
+                    "management": True,
+                    "ranConnection": False,
+                }
+            )
+            data["endPointIds"].append(tracker_copy["endPointsIds"][0])
+            mgmt["endPointIds"].append(tracker_copy["endPointsIds"][1])
+            #  if i ==3:
+            #      print(json.dumps(vsb))
+            #      sys.exit(1)
             vsb_requests.append(
                 {
                     "vsBlueprint": vsb,
@@ -66,11 +102,11 @@ def main():
             ],
             "translationRules": [],
         }
-    time.sleep(5)
+    #  time.sleep(5)
     data_matrix = []
     max_connects = 101
     for i in range(0, servers):
-        print(f"test with {i+1} trackers")
+        print(f"test with {i+1} tracker")
         print(
             f"count atomicComponents: {len(vsb_requests[i]['nsds'][0]['nsDf'][0]['vnfProfile'])}"
         )
@@ -81,13 +117,14 @@ def main():
         times = []
         for j in range(0, max_connects):
             #  print(f"1 passthrough, {j} connect")
+            #  print(json.dumps(compose_req))
             start = time.perf_counter_ns()
             resp = post("http://localhost:8086/nsd/compose", json=compose_req)
             request_time = time.perf_counter_ns() - start
             resp.raise_for_status()
             #  print(resp.json())
             #  print(f"Request completed in {request_time/1000000} ms")
-            times.append(request_time)
+            times.append(request_time/1000000)
             compose_req["contexts"].append({"ctxbRequest": ctxb_connect_request})
         #  for t in times:
         #      print(t / 1000000)
