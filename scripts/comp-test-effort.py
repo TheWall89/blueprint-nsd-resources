@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import time
 import json
 import math
 import sys
@@ -23,6 +24,7 @@ def scantree(path):
 
 def main():
     servers = 8
+    max_connects = 101
     vsb_path = "./UC_5.1_SmartCity_CNIT/vsb_cnit_smart_city.yaml"
     #  vsb_path = "./UC_1.2_SmartTransport_A2T/ARES2T_VSB_V7.yaml"
     ctx_passt_path = "./common/ctx_delay/ctx_delay.yaml"
@@ -100,55 +102,91 @@ def main():
         }
     with open(ctx_connect_path) as ctx_connect_file:
         ctx_connect = yaml.safe_load(ctx_connect_file)
-        ctxb_connect_request = {
-            "ctxBlueprint": ctx_connect,
-            "nsds": [
-                post("http://localhost:8086/nsd/generate", json=ctx_connect).json()
-            ],
-            "translationRules": [],
-        }
+        ctxb_connect_requests = []
+        for i in range(0, max_connects):
+            ctx_connect_copy = deepcopy(ctx_connect)
+            ctx_connect_copy["blueprintId"] += f"_{i}"
+            ctx_connect_copy["atomicComponents"][0]["componentId"] += f"_{i}"
+            for i in range(0, len(ctx_connect_copy["atomicComponents"][0]["endPointsIds"])):
+                ctx_connect_copy["atomicComponents"][0]["endPointsIds"][i] += f"_{i}"
+            #  print(json.dumps(ctx_connect_copy["atomicComponents"][0]["endPointsIds"],indent=2))
+            for ep in ctx_connect_copy["endPoints"]:
+                ep["endPointId"] += f"_{i}"
+            for cs in ctx_connect_copy["connectivityServices"]:
+                for i in range(0, len(cs["endPointIds"])):
+                    cs["endPointIds"][i] += f"_{i}"
+            #  print(json.dumps(ctx_connect_copy, indent=2))
+            ctxb_connect_requests.append(
+                {
+                    "ctxBlueprint": ctx_connect_copy,
+                    "nsds": [
+                        post(
+                            "http://localhost:8086/nsd/generate", json=ctx_connect_copy
+                        ).json()
+                    ],
+                    "translationRules": [],
+                }
+            )
     #  time.sleep(5)
-    data_matrix_vsb = []
-    data_matrix_nsd = []
-    max_connects = 101
+    vsb_lines_effort = []
+    nsd_effort = []
+    nsd_lines = []
+    times_matrix = []
     for i in range(0, servers):
         print(f"test with {i+1} tracker")
         print(
             f"count atomicComponents: {len(vsb_requests[i]['nsds'][0]['nsDf'][0]['vnfProfile'])}"
         )
         vsb_lines = len(yaml.safe_dump(vsb_requests[i]["vsBlueprint"]).splitlines())
-        print(f"i: {i}")
+        vsb_lines_nsd = len(yaml.safe_dump(vsb_requests[i]["nsds"]).splitlines())
+        #  print(f"i: {i}")
         print(f"vsb_lines: {vsb_lines}")
         vsb_pms = math.pow(0.85 * 3.2 * (vsb_lines / 1000), 1.05)
-        data_matrix_vsb.append([vsb_pms])
+        vsb_lines_effort.append([vsb_lines, vsb_pms, vsb_lines_nsd])
         compose_req = {
             "vsbRequest": vsb_requests[i],
             "contexts": [{"ctxbRequest": ctxb_passt_request}],
         }
+        times = []
         pms = []
+        lines = []
         for j in range(0, max_connects):
             #  print(f"1 passthrough, {j} connect")
             #  print(json.dumps(compose_req))
-            #  start = time.perf_counter_ns()
+            start = time.perf_counter_ns()
             resp = post("http://localhost:8086/nsd/compose", json=compose_req)
-            #  request_time = time.perf_counter_ns() - start
+            request_time = time.perf_counter_ns() - start
             resp.raise_for_status()
+            times.append(request_time/1000000)
             resp_lines = len(yaml.safe_dump(resp.json()).splitlines())
             #  print(f"lines: {resp_lines})
             #  print(resp.json())
-            #  print(f"Request completed in {request_time/1000000} ms")
+            print(f"Request completed in {request_time/1000000} ms")
             pms.append(math.pow(1.3 * 3.2 * (resp_lines / 1000), 1.05))
-            compose_req["contexts"].append({"ctxbRequest": ctxb_connect_request})
+            lines.append(resp_lines)
+            compose_req["contexts"].append({"ctxbRequest": ctxb_connect_requests[j]})
+            #  print(json.dumps(compose_req))
         #  for t in pms:
         #      print(t / 1000000)
-        data_matrix_nsd.append(pms)
+        nsd_effort.append(pms)
+        nsd_lines.append(lines)
+        times_matrix.append(times)
     with open("comp_test_effort_vsb.csv", mode="w") as csv_file:
         writer = csv.writer(csv_file, delimiter=",")
-        writer.writerows(data_matrix_vsb)
+        writer.writerow(["vsb lines", "vsb effort", "vsb nsd lines"])
+        writer.writerows(vsb_lines_effort)
     with open("comp_test_effort_nsd.csv", mode="w") as csv_file:
         writer = csv.writer(csv_file, delimiter=",")
         writer.writerow([f"{i} connect" for i in range(0, max_connects)])
-        writer.writerows(data_matrix_nsd)
+        writer.writerows(nsd_effort)
+    with open("comp_test_lines_nsd.csv", mode="w") as csv_file:
+        writer = csv.writer(csv_file, delimiter=",")
+        writer.writerow([f"{i} connect" for i in range(0, max_connects)])
+        writer.writerows(nsd_lines)
+    with open("comp_test_times.csv", mode="w") as csv_file:
+        writer = csv.writer(csv_file, delimiter=",")
+        writer.writerow([f"{i} connect" for i in range(0, max_connects)])
+        writer.writerows(times_matrix)
 
 
 if __name__ == "__main__":
